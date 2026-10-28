@@ -1,0 +1,14 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {example} from '../src/circuits.js';
+import {solve,change} from '../src/solver.js';
+const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} differs from ${b}`);
+test('both parallel branches match independent analytical currents',()=>{const r=solve(example('branches'));near(r.currents.D1,3/340);near(r.currents.D2,3/340);assert.equal(r.passes,true);});
+test('divider produces half the supply',()=>{const r=solve(example('divider'));near(r.volts.S,2.5);assert.equal(r.passes,true);});
+test('divider responds to unequal resistance analytically',()=>{const c=change(example('divider'),[{id:'R1',field:'value',value:10000}]);near(solve(c).volts.S,5/11);assert.equal(solve(c).passes,false);});
+test('reversed LED blocks only its branch',()=>{const c=change(example('branches'),[{id:'D1',field:'reversed',value:true}]),r=solve(c);near(r.currents.D1,0);near(r.currents.D2,3/340);assert.equal(r.passes,false);});
+test('switch changes loop continuity',()=>{assert.equal(solve(example('switch')).passes,true);const c=change(example('switch'),[{id:'SW1',field:'enabled',value:false}]);near(solve(c).currents.D1,0);assert.equal(solve(c).passes,false);});
+test('simultaneous faults require both repairs',()=>{const original=example('branches'),c=change(original,[{id:'D1',field:'reversed',value:true},{id:'R2',field:'value',value:22}]);assert.equal(solve(c).passes,false);assert.equal(solve(change(c,[{id:'D1',field:'reversed',value:false}])).passes,false);assert.equal(solve(change(c,[{id:'D1',field:'reversed',value:false},{id:'R2',field:'value',value:330}])).passes,true);});
+test('source below LED threshold produces no LED current',()=>{const c=example('branches');c.supply=1.5;near(solve(c).currents.D1,0);assert.equal(solve(c).passes,false);});
+test('editing creates a copy and validates field and value types',()=>{const c=example('divider');assert.throws(()=>change(c,[{id:'R1',field:'value',value:0}]));assert.throws(()=>change(c,[{id:'R1',field:'enabled',value:'yes'}]));assert.throws(()=>change(c,[{id:'R1',field:'a',value:'0'}]));const d=change(c,[{id:'R1',field:'value',value:2000}]);assert.equal(c.parts[0].value,1000);assert.equal(d.parts[0].value,2000);});
+test('invalid and excessively large graphs are rejected',()=>{const c=example('branches');c.parts[1].id='R1';assert.throws(()=>solve(c));assert.throws(()=>solve({...example('divider'),supply:Infinity}));});
