@@ -54,7 +54,7 @@ With Meta configured, click **Investigate with Meta**. The model can run experim
 
 This is a simulator prototype, not a general electronics design tool. The LED model uses a fixed forward threshold and 10 Ω dynamic resistance. Switches have 0.01 Ω closed resistance. A tiny conductance to ground stabilizes floating nodes. It doesn't model transients, reverse breakdown, temperature, or component tolerances.
 
-The tests use mocked model responses. Live Meta accuracy and browser behavior still need to be checked. A configured key means a key is present, not that the API has accepted it.
+The automated tests use mocked model responses. One live Muse Spark 1.3 smoke test also passed: the model ran three experiments and repaired a reversed LED plus an undersized branch resistor. An independent calculation put both LED currents at 8.82 mA, within the 3–15 mA targets. This checks one case, not overall model accuracy. The browser simulation flow has also been checked; the live AI panel still needs an end-to-end browser test. A configured key means a key is present, not that the API has accepted it.
 
 The server is local-only. Public hosting will need authentication and per-user spending controls. The agent currently has a five-request, ten-tool-call budget and a 90-second overall timeout per investigation.
 
