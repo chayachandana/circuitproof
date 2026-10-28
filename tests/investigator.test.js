@@ -1,0 +1,13 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {example} from '../src/circuits.js';
+import {change} from '../src/solver.js';
+import {investigate} from '../src/investigator.mjs';
+const tool=(name,args)=>({id:'call-'+name,type:'function',function:{name,arguments:JSON.stringify(args)}});
+const response=(...calls)=>({ok:true,json:async()=>({choices:[{message:{role:'assistant',tool_calls:calls}}]})});
+const edits=[{id:'R1',field:'value',value:1000}],recommend=()=>response(tool('recommend',{edits,explanation:'R1 was too large. Equal resistors restore the 2.5 V sensor target.'}));
+test('recommendation is rejected until an experiment verifies it',async()=>{const c=change(example('divider'),[{id:'R1',field:'value',value:10000}]);const queue=[recommend(),response(tool('experiment',{edits})),recommend()];let requests=0;const r=await investigate(c,{key:'mock',transport:async()=>{requests++;return queue.shift();}});assert.equal(requests,3);assert.equal(r.original.passes,false);assert.equal(r.verified.passes,true);assert.equal(r.experiments.length,1);assert.equal(c.parts[0].value,10000);});
+test('bad tool requests stop at a fixed budget',async()=>{let count=0;await assert.rejects(investigate(example('divider'),{key:'mock',transport:async()=>{count++;return response(tool('invalid',{}));}}),/budget/);assert.equal(count,5);});
+test('missing key prevents network use',async()=>{await assert.rejects(investigate(example('divider'),{key:'',transport:()=>assert.fail('network call')}),/MODEL_API_KEY/);});
+test('healthy circuits finish without unnecessary experiments',async()=>{const r=await investigate(example('divider'),{key:'mock',transport:async()=>response(tool('recommend',{edits:[],explanation:'The divider meets its target.'}))});assert.equal(r.verified.passes,true);assert.equal(r.edits.length,0);});
+test('provider errors do not return upstream secrets',async()=>{await assert.rejects(investigate(example('divider'),{key:'private-test-value',transport:async()=>({ok:false,status:401})}),e=>e.message.includes('401')&&!e.message.includes('private-test-value'));});
