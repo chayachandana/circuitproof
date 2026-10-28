@@ -9,7 +9,7 @@ export async function investigate(circuit,{key=process.env.MODEL_API_KEY,model=p
   const signal=AbortSignal.timeout(90000);let used=0;
   for(let turn=0;turn<5;turn++){
     let response;
-    try{response=await transport('https://api.meta.ai/v1/chat/completions',{method:'POST',signal,headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model,messages,tools,tool_choice:'required',max_completion_tokens:1800})});}catch{throw Error('Meta connection failed or timed out. No changes were applied.');}
+    try{response=await transport('https://api.meta.ai/v1/chat/completions',{method:'POST',signal,headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model,messages,tools,tool_choice:'auto',max_completion_tokens:1800})});}catch{throw Error('Meta connection failed or timed out. No changes were applied.');}
     if(!response.ok)throw Error(`Meta request failed (HTTP ${response.status}). Check API access, credits, and model configuration.`);
     const payload=await response.json(),message=payload.choices?.[0]?.message;
     if(!message||!Array.isArray(message.tool_calls)||!message.tool_calls.length||message.tool_calls.length>10)throw Error('Meta did not return a supported tool call.');
