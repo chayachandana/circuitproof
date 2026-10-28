@@ -18,6 +18,24 @@ To enable Meta investigations, copy `.env.example` to `.env`, add your key after
 npm test
 ```
 
+## Check the setup
+
+I use this offline check before testing the model:
+
+```sh
+npm run verify
+```
+
+It checks the runtime, all three reference circuits, a combined fault, and a known correction. It doesn't call Meta or spend credits.
+
+Once the key is saved in `.env`, this runs one real investigation:
+
+```sh
+npm run verify:live
+```
+
+That uses API credits. It asks Meta to repair two faults, independently checks the proposed changes, and saves the evidence in `work/live-verification.json`. The `work` folder is excluded from Git. One passing run is a smoke test, not an accuracy result.
+
 ## Try it
 
 Pick a circuit, introduce a fault, and run the simulation. You can edit resistor values, reverse an LED, or open a switch yourself.
