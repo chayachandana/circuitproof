@@ -3,6 +3,13 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
-  "scripts": { "start": "node server.mjs", "test": "node --test" }
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test",
+    "verify": "node scripts/verify.mjs",
+    "verify:live": "node scripts/verify.mjs --live"
+  }
 }
