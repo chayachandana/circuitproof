@@ -1,13 +1,11 @@
-import {test} from 'node:test';
-import assert from 'node:assert/strict';
-import {Readable} from 'node:stream';
-import {app} from '../server.mjs';
-import {example} from '../src/circuits.js';
-async function request({body=JSON.stringify({circuit:example('divider')}),headers={},method='POST'}={},agent=async()=>({verified:true})){
-  const req=Readable.from([Buffer.from(body)]);Object.assign(req,{url:'/api/investigate',method,headers:{host:'localhost:5180',origin:'http://localhost:5180','content-type':'application/json',...headers}});
-  return new Promise(resolve=>app({agent}).emit('request',req,{writeHead(status){this.status=status;},end(body){resolve({status:this.status,body:JSON.parse(body)});}}));
-}
-test('valid circuit reaches agent with measurements kept server-side',async()=>{const r=await request({},async c=>{assert.equal(c.id,'divider');return {verified:true};});assert.equal(r.status,200);});
-test('cross-origin calls are blocked before paid use',async()=>{const r=await request({headers:{origin:'https://elsewhere.example'}},()=>assert.fail('unexpected call'));assert.equal(r.status,403);});
-test('invalid circuit and JSON never reach agent',async()=>{for(const body of ['{','{"circuit":{}}']){const r=await request({body},()=>assert.fail('unexpected call'));assert.equal(r.status,400);}});
-test('internal exception text is not exposed',async()=>{const r=await request({},()=>{throw Error('private configuration');});assert.equal(r.status,502);assert.doesNotMatch(JSON.stringify(r),/private configuration/);});
+import {test} from 'node:test';import assert from 'node:assert/strict';import {createService} from '../src/service.mjs';import {example} from '../src/circuits.js';
+const request=(options={})=>new Request('http://localhost:5180/api/investigate',{method:'POST',headers:{Origin:'http://localhost:5180','Content-Type':'application/json',...options.headers},body:options.body||JSON.stringify({circuit:example('divider')})});
+const service=agent=>createService({env:{MODEL_API_KEY:'test-only'},agent});
+test('valid circuit reaches the agent',async()=>{const r=await service(async c=>{assert.equal(c.id,'divider');return {verified:true};})(request());assert.equal(r.status,200);});
+test('cross-origin request cannot use credits',async()=>assert.equal((await service(()=>assert.fail())(request({headers:{Origin:'https://elsewhere.example'}}))).status,403));
+test('invalid project is rejected before model access',async()=>assert.equal((await service(()=>assert.fail())(request({body:'{"circuit":{}}'}))).status,400));
+test('protected deployment requires the correct access code',async()=>{const handler=createService({env:{HOSTED:'1',MODEL_API_KEY:'mock',DEMO_ACCESS_CODE:'demo-code'},agent:async()=>({ok:true})});assert.equal((await handler(request())).status,401);assert.equal((await handler(request({headers:{Authorization:'Bearer demo-code'}}))).status,200);});
+test('hosting without an access code disables paid requests',async()=>assert.equal((await createService({env:{HOSTED:'1',MODEL_API_KEY:'mock'}})(request())).status,503));
+test('rate limit bounds repeated accepted investigations',async()=>{const handler=service(async()=>({ok:true}));for(let i=0;i<4;i++)assert.equal((await handler(request())).status,200);assert.equal((await handler(request())).status,429);});
+test('stream delivers experiment and result events',async()=>{const handler=service(async(c,{onEvent})=>{onEvent({type:'experiment',index:1});return {verified:true};});const r=await handler(request({headers:{Accept:'application/x-ndjson'}}));const events=(await r.text()).trim().split('\n').map(JSON.parse);assert.equal(events[0].type,'experiment');assert.equal(events[1].type,'result');});
+test('private errors are not exposed',async()=>{const r=await service(()=>{throw Error('private-key-details');})(request());assert.doesNotMatch(await r.text(),/private-key-details/);});
