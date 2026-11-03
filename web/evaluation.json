@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-03",
+  "model": "muse-spark-1.3",
+  "mode": "live",
+  "total": 8,
+  "passed": 8,
+  "description": "One run per case on eight predefined circuits/fault configurations, including one healthy control. No automatic retries. Repairs independently checked. This small development set is not a held-out benchmark.",
+  "cases": [
+    {
+      "name": "reversed LED",
+      "passed": true,
+      "elapsedMs": 8443,
+      "experiments": 1,
+      "tokens": 3584
+    },
+    {
+      "name": "two interacting faults",
+      "passed": true,
+      "elapsedMs": 7274,
+      "experiments": 1,
+      "tokens": 3689
+    },
+    {
+      "name": "dim second branch",
+      "passed": true,
+      "elapsedMs": 5435,
+      "experiments": 1,
+      "tokens": 3529
+    },
+    {
+      "name": "sensor divider ratio",
+      "passed": true,
+      "elapsedMs": 13617,
+      "experiments": 1,
+      "tokens": 4110
+    },
+    {
+      "name": "open switch",
+      "passed": true,
+      "elapsedMs": 4774,
+      "experiments": 1,
+      "tokens": 3143
+    },
+    {
+      "name": "series polarity fault",
+      "passed": true,
+      "elapsedMs": 5858,
+      "experiments": 1,
+      "tokens": 3457
+    },
+    {
+      "name": "loaded divider faults",
+      "passed": true,
+      "elapsedMs": 33332,
+      "experiments": 1,
+      "tokens": 6975
+    },
+    {
+      "name": "healthy circuit control",
+      "passed": true,
+      "elapsedMs": 6808,
+      "experiments": 0,
+      "tokens": 1931
+    }
+  ],
+  "previousRun": {
+    "passed": 6,
+    "total": 8,
+    "report": "docs/evaluation-first-run.json"
+  }
+}
