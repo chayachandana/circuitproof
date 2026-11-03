@@ -4,6 +4,8 @@ I built CircuitProof to make AI circuit debugging testable. Meta's Muse Spark ca
 
 ## Try it
 
+[Open CircuitProof online](https://circuitproof-chaya.shrewd-shrew-1225.chatgpt.site) · [Source code](https://github.com/chayachandana/circuitproof)
+
 Pick a circuit, introduce a fault, and run the simulation. You can also edit resistor values, reverse LEDs, open switches, or import a custom circuit as JSON.
 
 **Try the recorded demo** replays a real Meta investigation with two faults. It's labeled as a recording and doesn't make a new API call. Live investigations stream experiment results as they arrive. Review the before/after measurements, apply the proposal, and export the notebook to keep the evidence.
