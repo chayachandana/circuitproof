@@ -1,40 +1,28 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {investigate} from './src/investigator.mjs';
-import {validate} from './src/solver.js';
+import {createService} from './src/service.mjs';
 try{process.loadEnvFile(fileURLToPath(new URL('.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
-const assets={'/':'web/index.html','/main.js':'web/main.js','/style.css':'web/style.css','/solver.js':'src/solver.js','/circuits.js':'src/circuits.js'};
-const types={html:'text/html',js:'text/javascript',css:'text/css'};
-function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
-export function app({agent=investigate}={}){
-  let running=false;
+const assets={'/':'web/index.html','/main.js':'web/main.js','/style.css':'web/style.css','/solver.js':'src/solver.js','/circuits.js':'src/circuits.js','/project.js':'src/project.js','/recording.json':'web/recording.json','/evaluation.json':'web/evaluation.json'};
+export function app({agent,env=process.env}={}){
+  const service=createService({env,agent});
   return http.createServer(async(req,res)=>{
     const host=req.headers.host||'';
-    if(!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host))return send(res,403,{error:'Local access only.'});
+    if(!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)){res.writeHead(403);res.end('{"error":"Local access only."}');return;}
     const path=new URL(req.url,'http://localhost').pathname;
-    if(path==='/api/config'&&req.method==='GET')return send(res,200,{ready:Boolean(process.env.MODEL_API_KEY?.trim()),model:process.env.META_MODEL||'muse-spark-1.3'});
-    if(path==='/api/investigate'){
-      if(req.method!=='POST')return send(res,405,{error:'Use POST.'});
-      if(req.headers.origin!==`http://${host}`||req.headers['content-type']!=='application/json')return send(res,403,{error:'Use the local app to start an investigation.'});
-      if(running)return send(res,429,{error:'One investigation is already running.'});
-      running=true;
+    if(path.startsWith('/api/')){
       try{
-        const chunks=[];let size=0;
-        for await(const chunk of req){size+=chunk.length;if(size>16000)throw Error('Circuit request too large.');chunks.push(chunk);}
-        let circuit;
-        try{circuit=JSON.parse(Buffer.concat(chunks).toString()).circuit;validate(circuit);}catch{send(res,400,{error:'Invalid circuit request.'});return;}
-        const result=await agent(circuit);send(res,200,result);
-      }catch(e){send(res,502,{error:e.message?.startsWith('Meta')||e.message?.includes('budget')||e.message?.startsWith('Add MODEL_API_KEY')?e.message:'Investigation failed. No changes applied.'});}
-      finally{running=false;}
-      return;
+        const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>20000){res.writeHead(413);res.end('{"error":"Circuit too large."}');return;}chunks.push(chunk);}
+        const request=new Request(`http://${host}${req.url}`,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body:Buffer.concat(chunks)}:{})});
+        const response=await service(request);res.writeHead(response.status,Object.fromEntries(response.headers));
+        if(response.body){const reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;res.write(value);}}res.end();
+      }catch{res.writeHead(500);res.end('{"error":"Unable to process request."}');}return;
     }
-    if(!['GET','HEAD'].includes(req.method))return send(res,405,{error:'Method not allowed.'});
-    if(!Object.hasOwn(assets,path))return send(res,404,{error:'Not found.'});
-    try{const bytes=await readFile(new URL(assets[path],import.meta.url));res.writeHead(200,{'Content-Type':types[assets[path].split('.').pop()]+'; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:bytes);}catch{send(res,500,{error:'Asset unavailable.'});}
+    if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);res.end();return;}
+    if(!Object.hasOwn(assets,path)){res.writeHead(404);res.end();return;}
+    try{const file=assets[path],body=await readFile(new URL(file,import.meta.url));res.writeHead(200,{'Content-Type':({'html':'text/html','js':'text/javascript','css':'text/css','json':'application/json'})[file.split('.').pop()]+'; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin'});res.end(req.method==='HEAD'?undefined:body);}catch{res.writeHead(404);res.end();}
   });
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
-  const server=app();server.on('error',e=>{console.error(`Preview could not start: ${e.code}`);process.exitCode=1;});
-  server.listen(Number(process.env.PORT)||5180,'127.0.0.1',()=>console.log(`CircuitProof Studio: http://127.0.0.1:${server.address().port}`));
+  const server=app();server.on('error',e=>{console.error(`Preview could not start: ${e.code}`);process.exitCode=1;});server.listen(Number(process.env.PORT)||5180,'127.0.0.1',()=>console.log(`CircuitProof Studio: http://127.0.0.1:${server.address().port}`));
 }
