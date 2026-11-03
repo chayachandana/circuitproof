@@ -1,5 +1,9 @@
 # CircuitProof — submission notes
 
+Live product: https://circuitproof-chaya.shrewd-shrew-1225.chatgpt.site
+
+Public repository: https://github.com/chayachandana/circuitproof
+
 ## Short description
 
 CircuitProof is an engineering workbench where Meta's Muse Spark investigates simulated circuit faults, runs experiments, and proposes repairs that must pass independent verification before they can be applied.
