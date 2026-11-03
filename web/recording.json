@@ -1,0 +1,502 @@
+{
+  "recordedAt": "2026-10-28T22:47:30.620Z",
+  "label": "Recorded live Meta investigation \u2014 October 28, 2026",
+  "circuit": {
+    "id": "branches",
+    "name": "Two independent LED branches",
+    "description": "Both LEDs should light at 3\u201315 mA. Each branch has its own resistor.",
+    "supply": 5,
+    "parts": [
+      {
+        "id": "R1",
+        "type": "resistor",
+        "a": "V+",
+        "b": "A",
+        "value": 330
+      },
+      {
+        "id": "D1",
+        "type": "led",
+        "a": "A",
+        "b": "0",
+        "vf": 2,
+        "reversed": true
+      },
+      {
+        "id": "R2",
+        "type": "resistor",
+        "a": "V+",
+        "b": "B",
+        "value": 22
+      },
+      {
+        "id": "D2",
+        "type": "led",
+        "a": "B",
+        "b": "0",
+        "vf": 2
+      }
+    ],
+    "goals": [
+      {
+        "kind": "current",
+        "id": "D1",
+        "min": 0.003,
+        "max": 0.015
+      },
+      {
+        "kind": "current",
+        "id": "D2",
+        "min": 0.003,
+        "max": 0.015
+      }
+    ],
+    "layout": {
+      "0": [
+        320,
+        390
+      ],
+      "V+": [
+        320,
+        60
+      ],
+      "A": [
+        180,
+        230
+      ],
+      "B": [
+        460,
+        230
+      ]
+    }
+  },
+  "result": {
+    "model": "muse-spark-1.3",
+    "explanation": "Simulation verification only. Diagnosed two independent faults:\n\n1. D1 reversed blocks branch A: original calculated D1=0A (fail 3-15mA), A=5V. Un-reversing D1 alone calculated D1=0.00882A pass, proving orientation was faulty. Correction restores forward Vf=2V drop, calculated A=2.088V.\n\n2. R2=22 ohm over-drives branch B: original calculated D2=0.09375A (fail >0.015A), B=2.937V. Changing R2 to 330 ohm alone calculated D2=0.00882A pass, proving resistor value was faulty. Correction limits current to (5-2)/(330+10)=8.82mA.\n\nCombined edit calculated D1=0.00882A pass and D2=0.00882A pass, meeting every goal.",
+    "edits": [
+      {
+        "id": "D1",
+        "field": "reversed",
+        "value": false
+      },
+      {
+        "id": "R2",
+        "field": "value",
+        "value": 330
+      }
+    ],
+    "original": {
+      "volts": {
+        "0": 0,
+        "V+": 5,
+        "A": 4.99999999835,
+        "B": 2.937499999979805
+      },
+      "currents": {
+        "R1": 5.000000413701855e-12,
+        "D1": 0,
+        "R2": 0.09375000000091796,
+        "D2": 0.0937499999979805
+      },
+      "goals": [
+        {
+          "kind": "current",
+          "id": "D1",
+          "min": 0.003,
+          "max": 0.015,
+          "value": 0,
+          "pass": false
+        },
+        {
+          "kind": "current",
+          "id": "D2",
+          "min": 0.003,
+          "max": 0.015,
+          "value": 0.0937499999979805,
+          "pass": false
+        }
+      ],
+      "passes": false,
+      "model": "Piecewise DC: LED threshold + 10 \u03a9, switch 0.01 \u03a9, 1 pS grounding. No transients, breakdown, or tolerances."
+    },
+    "verified": {
+      "volts": {
+        "0": 0,
+        "V+": 5,
+        "A": 2.088235294097379,
+        "B": 2.088235294097379
+      },
+      "currents": {
+        "R1": 0.008823529411826124,
+        "D1": 0.008823529409737896,
+        "R2": 0.008823529411826124,
+        "D2": 0.008823529409737896
+      },
+      "goals": [
+        {
+          "kind": "current",
+          "id": "D1",
+          "min": 0.003,
+          "max": 0.015,
+          "value": 0.008823529409737896,
+          "pass": true
+        },
+        {
+          "kind": "current",
+          "id": "D2",
+          "min": 0.003,
+          "max": 0.015,
+          "value": 0.008823529409737896,
+          "pass": true
+        }
+      ],
+      "passes": true,
+      "model": "Piecewise DC: LED threshold + 10 \u03a9, switch 0.01 \u03a9, 1 pS grounding. No transients, breakdown, or tolerances."
+    },
+    "experiments": [
+      {
+        "edits": [
+          {
+            "id": "D1",
+            "field": "reversed",
+            "value": false
+          }
+        ],
+        "candidate": {
+          "id": "branches",
+          "name": "Two independent LED branches",
+          "description": "Both LEDs should light at 3\u201315 mA. Each branch has its own resistor.",
+          "supply": 5,
+          "parts": [
+            {
+              "id": "R1",
+              "type": "resistor",
+              "a": "V+",
+              "b": "A",
+              "value": 330
+            },
+            {
+              "id": "D1",
+              "type": "led",
+              "a": "A",
+              "b": "0",
+              "vf": 2,
+              "reversed": false
+            },
+            {
+              "id": "R2",
+              "type": "resistor",
+              "a": "V+",
+              "b": "B",
+              "value": 22
+            },
+            {
+              "id": "D2",
+              "type": "led",
+              "a": "B",
+              "b": "0",
+              "vf": 2
+            }
+          ],
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015
+            }
+          ],
+          "layout": {
+            "0": [
+              320,
+              390
+            ],
+            "V+": [
+              320,
+              60
+            ],
+            "A": [
+              180,
+              230
+            ],
+            "B": [
+              460,
+              230
+            ]
+          }
+        },
+        "readings": {
+          "volts": {
+            "0": 0,
+            "V+": 5,
+            "A": 2.088235294097379,
+            "B": 2.937499999979805
+          },
+          "currents": {
+            "R1": 0.008823529411826124,
+            "D1": 0.008823529409737896,
+            "R2": 0.09375000000091796,
+            "D2": 0.0937499999979805
+          },
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0.008823529409737896,
+              "pass": true
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0.0937499999979805,
+              "pass": false
+            }
+          ],
+          "passes": false,
+          "model": "Piecewise DC: LED threshold + 10 \u03a9, switch 0.01 \u03a9, 1 pS grounding. No transients, breakdown, or tolerances."
+        }
+      },
+      {
+        "edits": [
+          {
+            "id": "R2",
+            "field": "value",
+            "value": 330
+          }
+        ],
+        "candidate": {
+          "id": "branches",
+          "name": "Two independent LED branches",
+          "description": "Both LEDs should light at 3\u201315 mA. Each branch has its own resistor.",
+          "supply": 5,
+          "parts": [
+            {
+              "id": "R1",
+              "type": "resistor",
+              "a": "V+",
+              "b": "A",
+              "value": 330
+            },
+            {
+              "id": "D1",
+              "type": "led",
+              "a": "A",
+              "b": "0",
+              "vf": 2,
+              "reversed": true
+            },
+            {
+              "id": "R2",
+              "type": "resistor",
+              "a": "V+",
+              "b": "B",
+              "value": 330
+            },
+            {
+              "id": "D2",
+              "type": "led",
+              "a": "B",
+              "b": "0",
+              "vf": 2
+            }
+          ],
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015
+            }
+          ],
+          "layout": {
+            "0": [
+              320,
+              390
+            ],
+            "V+": [
+              320,
+              60
+            ],
+            "A": [
+              180,
+              230
+            ],
+            "B": [
+              460,
+              230
+            ]
+          }
+        },
+        "readings": {
+          "volts": {
+            "0": 0,
+            "V+": 5,
+            "A": 4.99999999835,
+            "B": 2.088235294097379
+          },
+          "currents": {
+            "R1": 5.000000413701855e-12,
+            "D1": 0,
+            "R2": 0.008823529411826124,
+            "D2": 0.008823529409737896
+          },
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0,
+              "pass": false
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0.008823529409737896,
+              "pass": true
+            }
+          ],
+          "passes": false,
+          "model": "Piecewise DC: LED threshold + 10 \u03a9, switch 0.01 \u03a9, 1 pS grounding. No transients, breakdown, or tolerances."
+        }
+      },
+      {
+        "edits": [
+          {
+            "id": "D1",
+            "field": "reversed",
+            "value": false
+          },
+          {
+            "id": "R2",
+            "field": "value",
+            "value": 330
+          }
+        ],
+        "candidate": {
+          "id": "branches",
+          "name": "Two independent LED branches",
+          "description": "Both LEDs should light at 3\u201315 mA. Each branch has its own resistor.",
+          "supply": 5,
+          "parts": [
+            {
+              "id": "R1",
+              "type": "resistor",
+              "a": "V+",
+              "b": "A",
+              "value": 330
+            },
+            {
+              "id": "D1",
+              "type": "led",
+              "a": "A",
+              "b": "0",
+              "vf": 2,
+              "reversed": false
+            },
+            {
+              "id": "R2",
+              "type": "resistor",
+              "a": "V+",
+              "b": "B",
+              "value": 330
+            },
+            {
+              "id": "D2",
+              "type": "led",
+              "a": "B",
+              "b": "0",
+              "vf": 2
+            }
+          ],
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015
+            }
+          ],
+          "layout": {
+            "0": [
+              320,
+              390
+            ],
+            "V+": [
+              320,
+              60
+            ],
+            "A": [
+              180,
+              230
+            ],
+            "B": [
+              460,
+              230
+            ]
+          }
+        },
+        "readings": {
+          "volts": {
+            "0": 0,
+            "V+": 5,
+            "A": 2.088235294097379,
+            "B": 2.088235294097379
+          },
+          "currents": {
+            "R1": 0.008823529411826124,
+            "D1": 0.008823529409737896,
+            "R2": 0.008823529411826124,
+            "D2": 0.008823529409737896
+          },
+          "goals": [
+            {
+              "kind": "current",
+              "id": "D1",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0.008823529409737896,
+              "pass": true
+            },
+            {
+              "kind": "current",
+              "id": "D2",
+              "min": 0.003,
+              "max": 0.015,
+              "value": 0.008823529409737896,
+              "pass": true
+            }
+          ],
+          "passes": true,
+          "model": "Piecewise DC: LED threshold + 10 \u03a9, switch 0.01 \u03a9, 1 pS grounding. No transients, breakdown, or tolerances."
+        }
+      }
+    ],
+    "source": "recorded",
+    "elapsedMs": 9994
+  }
+}
