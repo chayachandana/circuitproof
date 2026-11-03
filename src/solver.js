@@ -7,6 +7,7 @@ export function validate(c){
   for(const p of c.parts){
     if(!p||typeof p.id!=='string'||!/^[A-Za-z0-9_]{1,20}$/.test(p.id)||ids.has(p.id))throw Error('Part IDs must be unique simple names.');ids.add(p.id);
     for(const n of [p.a,p.b]){if(typeof n!=='string'||!/^([A-Za-z0-9_+-]{1,20})$/.test(n))throw Error('Invalid node name.');nodes.add(n);}
+    if(['__proto__','prototype','constructor'].includes(p.id)||[p.a,p.b].some(n=>['__proto__','prototype','constructor'].includes(n)))throw Error('Reserved component or node name.');
     if(p.a===p.b||!['resistor','led','switch'].includes(p.type)||p.enabled!==undefined&&typeof p.enabled!=='boolean'||p.reversed!==undefined&&typeof p.reversed!=='boolean')throw Error('Invalid component.');
     if(p.type==='resistor'&&(!Number.isFinite(p.value)||p.value<1||p.value>1e7))throw Error('Resistance must be 1–10,000,000 Ω.');
     if(p.type==='led'&&(!Number.isFinite(p.vf)||p.vf<1||p.vf>4))throw Error('LED forward voltage must be 1–4 V.');
@@ -48,6 +49,7 @@ export function solve(input){
     const values=linear(rows,rhs),volts={...known,...Object.fromEntries(unknown.map((n,i)=>[n,values[i]]))};
     if(diodes.some(p=>{const e=edges.find(e=>e.id===p.id),delta=volts[e.a]-volts[e.b]-p.vf;return on.has(p.id)?delta < -1e-7:delta>1e-7;}))continue;
     const currents=Object.fromEntries(edges.map(e=>[e.id,e.g*(volts[e.a]-volts[e.b]-e.e)]));
+    if(Object.values(volts).some(v=>!Number.isFinite(v))||Object.values(currents).some(v=>!Number.isFinite(v)))throw Error('Non-finite circuit solution.');
     const goals=c.goals.map(g=>{const value=g.kind==='voltage'?volts[g.id]:Math.abs(currents[g.id]);return {...g,value,pass:value>=g.min-1e-9&&value<=g.max+1e-9};});
     return {volts,currents,goals,passes:goals.every(g=>g.pass),model:'Piecewise DC: LED threshold + 10 Ω, switch 0.01 Ω, 1 pS grounding. No transients, breakdown, or tolerances.'};
   }
