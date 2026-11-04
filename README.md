@@ -38,7 +38,7 @@ npm run evaluate:live    # eight paid live investigations
 - A Meta agent with experiment and recommendation tools, streaming evidence, token counts, and bounded requests.
 - Server and browser repair verification.
 - A protected hosting API and a dependency-free Worker build.
-- A demo script, submission notes, evaluation reports, and MIT license.
+- Reproducible evaluation reports and MIT license.
 
 ## Results
 
@@ -51,11 +51,5 @@ The backend calls `muse-spark-1.3` through Meta Model API. The agent gets at mos
 This is a simulation tool. LEDs use a forward threshold plus 10 Ω dynamic resistance. Closed switches use 0.01 Ω; tiny grounding conductance stabilizes floating nodes. There are no transients, thermal effects, tolerances, or reverse-breakdown calculations. The agent can edit values, polarity, and enabled state, but cannot change goals or rewire endpoints.
 
 Hosted live calls require a separate access code. The API allows one active request and four accepted requests per client in ten minutes per server instance. Those counters are not a durable global spending limit. Set a budget in Meta's dashboard too. Circuit notebooks stay in the visitor's browser until exported; a live investigation sends its circuit to Meta.
-
-## Hosting and submission
-
-The Sites deployment is generated from these sources with `npm run build`. The generated Worker contains no keys; runtime secrets are configured separately. The local hosting folder is `../circuitproof-hosting` and is created using the Sites Worker ESM starter.
-
-See [the three-minute demo plan](docs/DEMO-SCRIPT.md) and [submission checklist](docs/SUBMISSION.md). The project is prepared here; the CV submission and any social posts are separate actions for me to review and send.
 
 Meta references: [Chat Completions](https://dev.meta.ai/docs/protocols/chat-completions) · [Tool calling](https://dev.meta.ai/docs/tool-calling) · [Reasoning](https://dev.meta.ai/docs/reasoning)
