@@ -2,6 +2,10 @@
 
 I built CircuitProof to make AI circuit debugging testable. Meta's Muse Spark can run experiments against a circuit, inspect calculated measurements, and propose a repair. The app only offers that repair after it passes the circuit's targets, then checks it independently in the browser.
 
+## Demo
+
+https://github.com/user-attachments/assets/4667aa5c-6998-4170-8f70-d9df241d65f3
+
 ## Try it
 
 [Open CircuitProof online](https://circuitproof-chaya.shrewd-shrew-1225.chatgpt.site) · [Source code](https://github.com/chayachandana/circuitproof)
